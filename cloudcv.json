@@ -1,0 +1,119 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: CloudCV API
+  description: Move your app forward with the Uber API
+  version: "1.0.0"
+# the domain of the service
+host: api.cloudcv.io
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /image/analyze/:
+    get:
+      summary: Analyze basic properties of the image
+      description: |
+        This endpoint can extract dominant colors from the image and return them 
+        as a JSON response.
+      parameters:
+        - name: image
+          in: query
+          description: Latitude component of location.
+          required: true
+          type: string
+      tags:
+        - Image, ExternalSource
+      responses:
+        200:
+          description: An array of products
+          schema:
+              $ref: '#/definitions/AnalyzeImageResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Analyze basic properties of the image
+      consumes: "application/x-www-form-urlencoded"
+      description: |
+        The Products endpoint returns information about the *Uber* products
+        offered at a given location. The response includes the display name
+        and other details about each product, and lists the products in the
+        proper display order.
+      parameters:
+        - name: image
+          in: formData
+          description: Latitude component of location.
+          required: true
+          type: file
+      tags:
+        - Image, UploadSource
+      responses:
+        200:
+          description: An array of products
+          schema:
+            $ref: '#/definitions/AnalyzeImageResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'            
+
+definitions:
+  Color:
+    properties:
+      red:
+        type: integer
+        format: int32
+      green:
+        type: integer
+        format: int32
+      blue:
+        type: integer
+        format: int32
+  DominantColor:
+    properties:
+      value: 
+        schema:
+          $ref: '#/definitions/Color' 
+      amount:
+        type: integer
+        format: float
+  DominantColors:
+    type: array
+    items:
+        schema:
+          $ref: '#/definitions/DominantColor' 
+  AnalyzeImageResponse:
+    properties:
+      size:
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+      aspect:
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+      colors:
+        schema:
+          $ref: '#/definitions/DominantColors' 
+  Error:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
