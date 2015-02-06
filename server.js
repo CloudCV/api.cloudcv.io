@@ -1,21 +1,33 @@
-var express  = require('express');
-var http     = require('http');
-var path     = require('path');
-var app      = express();
-var util     = require('util');
-var cv       = require('cloudcv-backend');
-var async    = require('async');
-var request  = require('request');
+var express = require('express')
+  , http = require('http')
+  , path = require('path')
+  , cookieParser = require('cookie-parser')
+  , errorhandler = require('errorhandler')
+  , multer     = require('multer')
+  , methodOverride = require('method-override')
+  , async = require('async')
+  , request = require('request')
+  , cv = require('cloudcv-backend')
+  ;
 
-// all environments
-app.use(express.favicon());
-app.use(express.logger('dev'));
-app.use(express.bodyParser());
-app.use(express.methodOverride());
-app.use(app.router);
+var app = express();
+
+// Configuration
+app.set('port', process.env.PORT || 3000);
+app.set('title', 'api.cloudcv.io');
+
+//app.use(express.favicon());
+//app.use(express.logger('dev'));
+
+app.use(methodOverride());
+app.use(multer({ dest: './uploads/'}));
+app.use(cookieParser('optional secret string'));
+
+//var env = process.env.NODE_ENV || 'development';
+app.use(errorhandler());  
 
 
-app.get('/image/analyze/:image', function (req, res) {
+app.get('/v1/image/analyze/:image', function (req, res) {
 
     var externalImageURL = decodeURIComponent(req.params.image);
 
@@ -46,7 +58,7 @@ app.get('/image/analyze/:image', function (req, res) {
     });
 });
 
-app.post('/image/analyze/', function (req, res) {
+app.post('/v1/image/analyze/', function (req, res) {
 
     if (req.files && req.files.image) {
         var uploadedImagePath = req.files.image.path;
@@ -65,7 +77,7 @@ app.post('/image/analyze/', function (req, res) {
         ], 
         function (err, result) {
 
-            fs.unlink(imageToLoad);
+            fs.unlink(uploadedImagePath);
 
             if (err) {
                 res.setHeader("Content-Type", "application/json");
@@ -84,4 +96,6 @@ app.post('/image/analyze/', function (req, res) {
 
 });
 
-module.exports = app;
+http.createServer(app).listen(app.get('port'), function(){
+  console.log("api.cloudcv.io server listening on port " + app.get('port'));
+});
