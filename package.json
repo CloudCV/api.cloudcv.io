@@ -15,7 +15,8 @@
     "express": "*",
     "method-override": "^2.3.1",
     "multer": "^0.1.7",
-    "request": "*"
+    "request": "*",
+    "winston": "^0.9.0"
   },
   "repository": {
     "type": "git",
