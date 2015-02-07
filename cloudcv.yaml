@@ -15,7 +15,7 @@ basePath: /v1
 produces:
   - application/json
 paths:
-  /image/analyze/:
+  /image/analyze/dominantColors:
     get:
       summary: Analyze basic properties of the image
       description: |
