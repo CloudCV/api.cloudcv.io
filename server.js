@@ -1,6 +1,7 @@
 var express = require('express')
   , http = require('http')
   , path = require('path')
+  , fs = require('fs')
   , cookieParser = require('cookie-parser')
   , errorhandler = require('errorhandler')
   , multer     = require('multer')
@@ -8,42 +9,25 @@ var express = require('express')
   , async = require('async')
   , request = require('request')
   , cv = require('cloudcv-backend')
-  , winston = require('winston')
   , validator = require('validator')
+  , logger = require('./lib/logger.js')
+  , download = require('./lib/download.js')
+  , config = require('./lib/config.js')
   ;
 
 var app = express();
 
-var logger = new (winston.Logger)({
-    transports: [
-        new (winston.transports.Console)(),
-        new (winston.transports.File)({
-            name: 'info-file',
-            filename: './logs/api.cloudcv.io.info.log',
-            level: 'info'
-        }),
-        new (winston.transports.File)({
-          name: 'error-file',
-          filename: './logs/api.cloudcv.io.error.log',
-          level: 'error'
-        })
-    ]
-});
-
 var multerOptions = {
     inMemory:true, 
     limits: { 
-        fileSize: 8 * 1048576, 
+        fileSize: config.maxFileSize, 
         files: 1
     }
 }
+
 // Configuration
 app.set('port', process.env.PORT || 3000);
 app.set('title', 'api.cloudcv.io');
-
-//app.use(express.favicon());
-//app.use(express.logger('dev'));
-
 app.use(methodOverride());
 app.use(multer(multerOptions));
 app.use(cookieParser('optional secret string'));
@@ -71,13 +55,12 @@ function MapAnalyzeResult(analyzeResult) {
     return returnRes;
 }
 
-
-app.get('/v1/image/analyze/:image', function (req, res) {
+app.get('/v1/image/analyze/dominantColors/:image', function (req, res) {
 
     var sendErrorResponse = function (code, message) {
         res.statusCode = code;
-        res.setHeader("Content-Type", "application/txt");
-        res.write(message);
+        res.setHeader("Content-Type", "application/json");
+        res.write(JSON.stringify({description:message}));
         res.end();
     };
 
@@ -92,24 +75,12 @@ app.get('/v1/image/analyze/:image', function (req, res) {
         return sendErrorResponse(404, 'Missing required parameter');
     }
 
-    logger.info('GET %s', externalImageURL);
-
-    // Construct request data
-    var requestSettings = {
-        method: 'GET',
-        url: externalImageURL,
-        encoding: null
-    };
-
-
     async.waterfall([
-        function (callback){
-            request(requestSettings, function (error, response, body) { callback(error, response, body); });
+        function (callback) {
+            download.plainDownloadViaHttpGet(externalImageURL, callback);
         },
-        function (response, image, callback) {
-
+        function (image, callback) {
             logger.info('Loaded file from %s of %d bytes', externalImageURL, image.length);
-
             cv.analyzeImage(image, callback);
         }
         ], 
@@ -130,12 +101,12 @@ app.get('/v1/image/analyze/:image', function (req, res) {
     );
 });
 
-app.post('/v1/image/analyze/', function (req, res) {
+app.post('/v1/image/analyze/dominantColors/', function (req, res) {
 
     var sendErrorResponse = function (code, message) {
         res.statusCode = code;
-        res.setHeader("Content-Type", "application/txt");
-        res.write(message);
+        res.setHeader("Content-Type", "application/json");
+        res.write(JSON.stringify({description:message}));
         res.end();
     };
 
@@ -145,16 +116,13 @@ app.post('/v1/image/analyze/', function (req, res) {
     else {
         return sendErrorResponse(400, "Missing image data");
     }
-
+    
     async.waterfall([
-        function (callback){
+        function (callback) {
             cv.analyzeImage(uploadedImage, callback); 
         }
         ], 
         function (err, result) {
-
-            if (uploadedImagePath)
-                fs.unlink(uploadedImagePath);
 
             if (err) {
                 logger.error(err);
