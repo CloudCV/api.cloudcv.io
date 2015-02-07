@@ -47,8 +47,6 @@ app.set('title', 'api.cloudcv.io');
 app.use(methodOverride());
 app.use(multer(multerOptions));
 app.use(cookieParser('optional secret string'));
-
-//var env = process.env.NODE_ENV || 'development';
 app.use(errorhandler());  
 
 function MapAnalyzeResult(analyzeResult) {
