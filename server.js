@@ -13,6 +13,7 @@ var express = require('express')
   , logger = require('./lib/logger.js')
   , download = require('./lib/download.js')
   , config = require('./lib/config.js')
+  , inspect = require('util').inspect
   ;
 
 var app = express();
@@ -60,7 +61,7 @@ app.get('/v1/image/analyze/dominantColors/:image', function (req, res) {
     var sendErrorResponse = function (code, message) {
         res.statusCode = code;
         res.setHeader("Content-Type", "application/json");
-        res.write(JSON.stringify({description:message}));
+        res.write(JSON.stringify({message:message}));
         res.end();
     };
 
@@ -84,10 +85,11 @@ app.get('/v1/image/analyze/dominantColors/:image', function (req, res) {
             cv.analyzeImage(image, callback);
         }
         ], 
-        function (err, result) {
-            if (err) {
-                logger.error(err);
-                sendErrorResponse(500, JSON.stringify(err));
+        function (failureOrNull, result) {
+            
+            if (failureOrNull) {
+                logger.error('Problem with a file %s: %s', externalImageURL, failureOrNull.message);
+                sendErrorResponse(500, failureOrNull.message);
             }
             else if (result) {
                 res.setHeader("Content-Type", "application/json");
@@ -106,7 +108,7 @@ app.post('/v1/image/analyze/dominantColors/', function (req, res) {
     var sendErrorResponse = function (code, message) {
         res.statusCode = code;
         res.setHeader("Content-Type", "application/json");
-        res.write(JSON.stringify({description:message}));
+        res.write(JSON.stringify({message:message}));
         res.end();
     };
 
@@ -122,11 +124,11 @@ app.post('/v1/image/analyze/dominantColors/', function (req, res) {
             cv.analyzeImage(uploadedImage, callback); 
         }
         ], 
-        function (err, result) {
+        function (failureOrNull, result) {
 
-            if (err) {
-                logger.error(err);
-                sendErrorResponse(500, JSON.stringify(err));
+            if (failureOrNull) {
+                logger.error('Problem with a file %s: %s', req.files.image.originalname, failureOrNull.message);
+                sendErrorResponse(500, failureOrNull.message);
             }
             else if (result) {
                 res.setHeader("Content-Type", "application/json");
