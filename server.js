@@ -1,3 +1,5 @@
+require('pmx').init();
+
 var express = require('express')
   , http = require('http')
   , path = require('path')
