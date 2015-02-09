@@ -44,7 +44,8 @@ paths:
             $ref: '#/definitions/Error'
     post:
       summary: Analyze basic properties of the image
-      consumes: "application/x-www-form-urlencoded"
+      consumes: 
+        - "application/x-www-form-urlencoded"
       description: |
         This endpoint can extract dominant colors from the image and return them 
         as a JSON response.
@@ -72,49 +73,40 @@ definitions:
   Color:
     properties:
       red:
+        description: Red component intensity (0..255)
         type: integer
         format: int32
       green:
+        description: Green component intensity (0..255)
         type: integer
         format: int32
       blue:
+        description: Blue component intensity (0..255)
         type: integer
         format: int32
       html:
+        description: HTML string color representation
         type: string
   DominantColor:
     properties:
       value: 
+        description: Dominant color value
         schema:
           $ref: '#/definitions/Color' 
       amount:
+        description: Color amount in percents of entire image
         type: integer
         format: float
-  DominantColors:
-    type: array
-    items:
-        schema:
-          $ref: '#/definitions/DominantColor' 
   AnalyzeImageResponse:
     properties:
-      size:
-        width:
-          type: integer
-          format: int32
-        height:
-          type: integer
-          format: int32
-      aspect:
-        width:
-          type: integer
-          format: int32
-        height:
-          type: integer
-          format: int32
       colors:
-        schema:
-          $ref: '#/definitions/DominantColors' 
+        description: Dominant colors
+        type: array
+        items:
+          schema:
+            $ref: '#/definitions/DominantColor' 
   Error:
     properties:
       message:
+        description: Human-friendlty error description
         type: string
