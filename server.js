@@ -1,4 +1,4 @@
-require('pmx').init();
+var pmx = require('pmx'); pmx.init();
 
 var express = require('express')
   , http = require('http')
@@ -34,7 +34,7 @@ app.set('title', 'api.cloudcv.io');
 app.use(methodOverride());
 app.use(multer(multerOptions));
 app.use(cookieParser('optional secret string'));
-app.use(errorhandler());  
+app.use(pmx.expressErrorHandler());  
 
 function MapAnalyzeResult(analyzeResult) {
     var returnRes = {
