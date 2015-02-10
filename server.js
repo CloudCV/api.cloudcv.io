@@ -59,14 +59,14 @@ function MapAnalyzeResult(analyzeResult) {
 }
 
 // Peace to everyone!
-app.all('/', function(req, res, next) {
+app.all('/api/', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
     next();
 });
 
 
-app.get('/v1/image/analyze/dominantColors/:image', function (req, res) {
+app.get('/api/v1/image/analyze/dominantColors/:image', function (req, res) {
 
     var sendErrorResponse = function (code, message) {
         res.statusCode = code;
@@ -113,7 +113,7 @@ app.get('/v1/image/analyze/dominantColors/:image', function (req, res) {
     );
 });
 
-app.post('/v1/image/analyze/dominantColors/', function (req, res) {
+app.post('/api/v1/image/analyze/dominantColors/', function (req, res) {
 
     var sendErrorResponse = function (code, message) {
         res.statusCode = code;
