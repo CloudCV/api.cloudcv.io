@@ -5,7 +5,6 @@ var express = require('express')
   , path = require('path')
   , fs = require('fs')
   , cookieParser = require('cookie-parser')
-  , errorhandler = require('errorhandler')
   , multer     = require('multer')
   , methodOverride = require('method-override')
   , async = require('async')
@@ -151,5 +150,5 @@ app.post('/api/v1/image/analyze/dominantColors/', function (req, res) {
 });
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log("api.cloudcv.io server listening on port " + app.get('port'));
+  logger.log("api.cloudcv.io server listening on port " + app.get('port'));
 });
